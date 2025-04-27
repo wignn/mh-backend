@@ -7,7 +7,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func RegisterUser(db *gorm.DB, user *model.User) (*model.UserResponse, error) {
+func RegisterUser(db *gorm.DB, user *model.User) (*model.User, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
@@ -16,13 +16,13 @@ func RegisterUser(db *gorm.DB, user *model.User) (*model.UserResponse, error) {
 	return repository.CreateUser(db, user)
 }
 
-func GetUserByID(db *gorm.DB, id *int) (*model.UserResponse, error) {
+func GetUserByID(db *gorm.DB, id *int) (*model.User, error) {
 	return repository.GetUserByID(db, id)
 }
 
 
-func UpdateUser(db *gorm.DB, id *int,user *model.User) (*model.User, error) {
-	return repository.UpdateUser(db, id, user)
+func UpdateUser(db *gorm.DB,user *model.User) (*model.User, error) {
+	return repository.UpdateUser(db, user)
 }
 
 func DeleteUser(db *gorm.DB, id *int) error {

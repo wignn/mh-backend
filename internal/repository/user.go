@@ -7,29 +7,24 @@ import (
 
 
 
-func CreateUser(db *gorm.DB, user *model.User) (*model.UserResponse, error) {
-	err := db.Create(user).Error
-	userResponse := model.UserResponse{
-		ID:    int(user.ID),
-		Name:  user.Name,
-		Email: user.Email,
-	}
-	return &userResponse, err
+func CreateUser(db *gorm.DB, user *model.User) (*model.User, error) {
+	err := db.Create(&user).Error
+
+	return user, err
 }
 
-func GetUserByID(db *gorm.DB, id *int) (*model.UserResponse, error) {
-	var user model.UserResponse
-	err := db.First(&user, id).Error
-	userResponse := model.UserResponse{
-		ID:   user.ID,
-		Name: user.Name,
-		Email: user.Email,
+func GetUserByID(db *gorm.DB, id *int) (*model.User, error) {
+	var user model.User
+	err := db.First(&user, *id).Error
+	if err != nil {
+		return nil, err
 	}
-	return &userResponse, err
+
+	return &user, nil
 }
 
-func UpdateUser(db *gorm.DB, id *int, user *model.User) (*model.User, error) {
-	err := db.Save(user).Error
+func UpdateUser(db *gorm.DB, user *model.User) (*model.User, error) {
+	err := db.Save(&user).Error
 	return user, err
 }
 
