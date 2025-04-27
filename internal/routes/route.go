@@ -11,5 +11,7 @@ func InitRoutes(r *gin.Engine, db *gorm.DB) {
 	apiV1 := r.Group("/api/v1") 
 	{
 		apiV1.POST("/users", handlers.CreateUser(db))
+		apiV1.GET("/users/:id", handlers.GetUserByID(db))
+		apiV1.PUT("/users/:id", handlers.UpdateUser(db))
 	}
 }
