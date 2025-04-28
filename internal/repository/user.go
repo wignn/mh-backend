@@ -5,8 +5,6 @@ import (
 	"gorm.io/gorm"
 )
 
-
-
 func CreateUser(db *gorm.DB, user *model.User) (*model.User, error) {
 	err := db.Create(&user).Error
 
