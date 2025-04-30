@@ -34,17 +34,27 @@ func GetBookByQuery(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		query := c.Query("query")
 		limit, err := strconv.Atoi(c.Query("limit"))
+		
+		var book []*model.Book
 		if err != nil {
 			c.JSON(400, gin.H{"error": "query"})
 			return
 		}
-		
+
 		page, err := strconv.Atoi(c.Query("page"))
 		if err != nil {
 			c.JSON(400, gin.H{"error": "page"})
 			return
 		}
 
-		log.Printf("Query: %s, Limit: %s, Page: %s\n", query, limit, page)
+
+		books, err := services.GetBookByQuery(db, book, &query, &page, &limit)
+		if err != nil {
+			log.Println("Error fetching book:", err)
+			c.JSON(500, gin.H{"message": "not found"})
+			return
+		}
+
+		c.JSON(200, books)
 	}
 }

@@ -2,10 +2,40 @@ package repository
 
 import (
 	"github.com/wignn/mh-backend/internal/model"
+	"github.com/wignn/mh-backend/pkg/utils"
 	"gorm.io/gorm"
 )
 
 func CreateBook(db *gorm.DB, book *model.Book) (*model.Book, error) {
 	err := db.Create(&book).Error
 	return book, err
+}
+
+
+func GetBookByQuery(db *gorm.DB, book []*model.Book, query *string, page *int, limit *int) ([]*model.Book, error) {
+	currentPage := 1
+	if page != nil {
+		currentPage = *page
+	}
+
+	currentLimit := 10
+	if limit != nil {
+		currentLimit = *limit
+	}
+
+	offset, currentLimit := utils.Paginate(currentPage, currentLimit)
+
+	tx := db.Model(&model.Book{})
+
+	if query != nil && *query != "" {
+		tx = tx.Where("title ILIKE ?", "%"+*query+"%") 
+	}
+
+	tx = tx.Offset(offset).Limit(currentLimit)
+
+	if err := tx.Find(&book).Error; err != nil {
+		return nil, err
+	}
+
+	return book, nil
 }

@@ -12,15 +12,15 @@ func InitRoutes(r *gin.Engine, db *gorm.DB) {
 	{
 		users := apiV1.Group("/users")
 		{
-			users.POST("/users", handlers.CreateUser(db))
-			users.GET("/users/:id", handlers.GetUserByID(db))
-			users.PUT("/users/:id", handlers.UpdateUser(db))
+			users.POST("/", handlers.CreateUser(db))
+			users.GET("/:id", handlers.GetUserByID(db))
+			users.PUT("/:id", handlers.UpdateUser(db))
 		}
 
 		books := apiV1.Group("/books") 
 		{
-			books.POST("/books", handlers.CreateBook(db))
-			books.GET("/books", handlers.GetBookByQuery(db))
+			books.POST("/", handlers.CreateBook(db))
+			books.GET("/", handlers.GetBookByQuery(db))
 		}
 		
 	}
