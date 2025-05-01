@@ -12,7 +12,8 @@ func CreateBook(db *gorm.DB, book *model.Book) (*model.Book, error) {
 }
 
 
-func GetBookByQuery(db *gorm.DB, book []*model.Book, query *string, page *int, limit *int) ([]*model.Book, error) {
+func GetBookByQuery(db *gorm.DB, query *string, page *int, limit *int) ([]*model.Book, error) {
+	var book []*model.Book
 	currentPage := 1
 	if page != nil {
 		currentPage = *page
@@ -38,4 +39,24 @@ func GetBookByQuery(db *gorm.DB, book []*model.Book, query *string, page *int, l
 	}
 
 	return book, nil
+}
+
+
+func GetBookByID(db *gorm.DB, id *int) (*model.Book, error) {
+	var book *model.Book
+	err := db.Where(&id).First(&book).Error
+	return book, err
+}
+
+func UpdateBook(db *gorm.DB, book *model.Book) (*model.Book, error) {
+	var existingBook model.Book
+	if err := db.First(&existingBook, book.ID).Error; err != nil {
+		return nil, err
+	}
+	
+	if err := db.Model(&existingBook).Updates(book).Error; err != nil {
+		return nil, err
+	}
+	
+	return &existingBook, nil
 }

@@ -10,6 +10,14 @@ func CreateBook(db *gorm.DB, book *model.Book) (*model.Book, error) {
 	return repository.CreateBook(db, book)
 }
 
-func GetBookByQuery(db *gorm.DB, book []*model.Book, query *string, page *int, limit *int) ([]*model.Book, error) {
-	return repository.GetBookByQuery(db, book, query, page, limit)
+func GetBookByQuery(db *gorm.DB, query *string, page *int, limit *int) ([]*model.Book, error) {
+	return repository.GetBookByQuery(db, query, page, limit)
+}
+
+func GetBookByID(db *gorm.DB, id *int) (*model.Book, error) {
+	return repository.GetBookByID(db, id)
+}
+
+func UpdateBook(db *gorm.DB, book *model.Book) (*model.Book, error) {
+	return repository.UpdateBook(db, book)
 }

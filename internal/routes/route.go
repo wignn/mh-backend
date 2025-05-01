@@ -21,6 +21,8 @@ func InitRoutes(r *gin.Engine, db *gorm.DB) {
 		{
 			books.POST("/", handlers.CreateBook(db))
 			books.GET("/", handlers.GetBookByQuery(db))
+			books.GET("/:id", handlers.GetBookByID(db))
+			books.PUT("/:id", handlers.UpdateBook(db))
 		}
 		
 	}
