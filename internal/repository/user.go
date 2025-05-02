@@ -30,3 +30,13 @@ func DeleteUser(db *gorm.DB, id *int) error {
 	err := db.Delete(&model.User{}, id).Error
 	return err
 }
+
+func GetUserByUsername(db *gorm.DB, username string) (*model.User, error) {
+	var user model.User
+	err := db.Where("username = ?", username).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}

@@ -15,14 +15,14 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-func generateToken(username *string, ID *int, isAdmin *bool)(string, error){
+func GenerateToken(username string, ID int, isAdmin bool)(string, error){
 	secretKey := os.Getenv("SECRET_KEY")
 	expritationTime := time.Now().Add(time.Hour * 24).Unix()
 
 	claims := &Claims{
-		username: *username,
-		ID:       *ID,
-		IsAdmin:  *isAdmin,
+		username: username,
+		ID:       ID,
+		IsAdmin:  isAdmin,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt:  expritationTime,
 			IssuedAt: time.Now().Unix(),

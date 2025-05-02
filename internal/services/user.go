@@ -3,8 +3,8 @@ package services
 import (
 	"github.com/wignn/mh-backend/internal/model"
 	"github.com/wignn/mh-backend/internal/repository"
-	"gorm.io/gorm"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 func RegisterUser(db *gorm.DB, user *model.User) (*model.User, error) {
@@ -16,12 +16,28 @@ func RegisterUser(db *gorm.DB, user *model.User) (*model.User, error) {
 	return repository.CreateUser(db, user)
 }
 
+func LoginUser(db *gorm.DB, user *model.User) (*model.User, error) {
+
+    existingUser, err := repository.GetUserByUsername(db, user.Username)
+    if err != nil {
+		return nil, err
+    }
+
+    err = bcrypt.CompareHashAndPassword([]byte(existingUser.Password), []byte(user.Password))
+    if err != nil {
+        return nil, err
+    }
+
+
+    return existingUser, nil
+}
+
+
 func GetUserByID(db *gorm.DB, id *int) (*model.User, error) {
 	return repository.GetUserByID(db, id)
 }
 
-
-func UpdateUser(db *gorm.DB,user *model.User) (*model.User, error) {
+func UpdateUser(db *gorm.DB, user *model.User) (*model.User, error) {
 	return repository.UpdateUser(db, user)
 }
 
