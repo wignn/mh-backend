@@ -140,6 +140,7 @@ func LoginUser(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		existingUser, err := services.LoginUser(db, &user)
+		
 		if err != nil {
 			c.JSON(401, gin.H{"error": "Invalid credentials"})
 			return

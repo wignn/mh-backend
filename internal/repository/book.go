@@ -37,7 +37,7 @@ func GetBookByQuery(db *gorm.DB, query string, page int, limit int) ([]*model.Bo
 
 func GetBookByID(db *gorm.DB, id *int) (*model.Book, error) {
 	var book *model.Book
-	err := db.Where(&id).First(&book).Error
+	err := db.Preload("Chapters").Preload("Genres").Where("id = ?", *id).First(&book).Error
 	return book, err
 }
 
@@ -52,4 +52,8 @@ func UpdateBook(db *gorm.DB, book *model.Book) (*model.Book, error) {
 	}
 	
 	return &existingBook, nil
+}
+
+func DeleteBook(db *gorm.DB, id int) error {
+	return db.Delete(&model.Book{}, id).Error
 }

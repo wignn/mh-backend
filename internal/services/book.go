@@ -21,3 +21,7 @@ func GetBookByID(db *gorm.DB, id *int) (*model.Book, error) {
 func UpdateBook(db *gorm.DB, book *model.Book) (*model.Book, error) {
 	return repository.UpdateBook(db, book)
 }
+
+func DeleteBook(db *gorm.DB, id int) error {
+	return repository.DeleteBook(db, id)
+}

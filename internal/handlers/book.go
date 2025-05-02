@@ -34,7 +34,7 @@ func GetBookByQuery(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		query := c.Query("query")
 		limit, err := strconv.Atoi(c.Query("limit"))
-	
+
 		if err != nil {
 			c.JSON(400, gin.H{"error": "query"})
 			return
@@ -45,7 +45,6 @@ func GetBookByQuery(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(400, gin.H{"error": "page"})
 			return
 		}
-
 
 		books, err := services.GetBookByQuery(db, query, page, limit)
 		if err != nil {
@@ -58,11 +57,10 @@ func GetBookByQuery(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-
 func GetBookByID(db *gorm.DB) gin.HandlerFunc {
-	return func (c *gin.Context) {
+	return func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
-		
+
 		if err != nil {
 			c.JSON(400, gin.H{"error": "Invalid book ID"})
 			return
@@ -79,9 +77,8 @@ func GetBookByID(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-
 func UpdateBook(db *gorm.DB) gin.HandlerFunc {
-	return func (c *gin.Context) {
+	return func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 
 		var book model.Book
@@ -103,8 +100,24 @@ func UpdateBook(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(500, gin.H{"error": "Failed to update book"})
 			return
 		}
-		
 
 		c.JSON(200, updatedBook)
+	}
+}
+
+func DeleteBook(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			c.JSON(400, gin.H{"error": "Invalid book ID"})
+			return
+		}
+
+		if err := services.DeleteBook(db, id); err != nil {
+			c.JSON(500, gin.H{"error": "Failed to delete book"})
+			return
+		}
+		
+		c.JSON(200, gin.H{"message": "Book deleted successfully"})
 	}
 }
