@@ -12,26 +12,19 @@ func CreateBook(db *gorm.DB, book *model.Book) (*model.Book, error) {
 }
 
 
-func GetBookByQuery(db *gorm.DB, query *string, page *int, limit *int) ([]*model.Book, error) {
+func GetBookByQuery(db *gorm.DB, query string, page int, limit int) ([]*model.Book, error) {
 	var book []*model.Book
 	currentPage := 1
-	if page != nil {
-		currentPage = *page
-	}
-
 	currentLimit := 10
-	if limit != nil {
-		currentLimit = *limit
-	}
 
 	offset, currentLimit := utils.Paginate(currentPage, currentLimit)
 
 	tx := db.Model(&model.Book{})
 
-	if query != nil && *query != "" {
-		tx = tx.Where("title ILIKE ?", "%"+*query+"%") 
+	if query != "" {
+		tx = tx.Where("title ILIKE ?", "%"+query+"%")
 	}
-
+	
 	tx = tx.Offset(offset).Limit(currentLimit)
 
 	if err := tx.Find(&book).Error; err != nil {

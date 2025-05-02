@@ -47,7 +47,7 @@ func GetBookByQuery(db *gorm.DB) gin.HandlerFunc {
 		}
 
 
-		books, err := services.GetBookByQuery(db, &query, &page, &limit)
+		books, err := services.GetBookByQuery(db, query, page, limit)
 		if err != nil {
 			log.Println("Error fetching book:", err)
 			c.JSON(500, gin.H{"message": "not found"})
@@ -84,10 +84,11 @@ func UpdateBook(db *gorm.DB) gin.HandlerFunc {
 	return func (c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 
-		var book *model.Book
+		var book model.Book
 
 		if err != nil {
 			c.JSON(400, gin.H{"error": "Invalid Book ID"})
+			return
 		}
 
 		if err := c.ShouldBindJSON(&book); err != nil {
@@ -97,12 +98,13 @@ func UpdateBook(db *gorm.DB) gin.HandlerFunc {
 
 		book.ID = uint(id)
 
-		book, err = services.UpdateBook(db, book)
+		updatedBook, err := services.UpdateBook(db, &book)
 		if err != nil {
 			c.JSON(500, gin.H{"error": "Failed to update book"})
 			return
 		}
 		
-		c.JSON(200, book)
+
+		c.JSON(200, updatedBook)
 	}
 }
