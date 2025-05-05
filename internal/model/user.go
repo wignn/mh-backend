@@ -7,9 +7,8 @@ type User struct {
 	Username string `gorm:"size:255"`
 	Email    string `gorm:"unique;size:255"`
 	Password string `gorm:"size:255"`
-	Bookmark []Book `gorm:"many2many:user_books;"`
 	IsAdmin  bool   `gorm:"default:false"`
-	bookmark []Bookmark `gorm:"foreignKey:UserID"`
+	Bookmarks []Bookmark 
 }
 
 

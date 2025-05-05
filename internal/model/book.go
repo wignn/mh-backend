@@ -17,9 +17,8 @@ type Book struct {
 	Description string     `gorm:"size:255"`
 	Cover       string     `gorm:"size:255"`
 	Genres      []Genre    `gorm:"many2many:book_genres;"`
-	Bookmarks   []Bookmark `gorm:"foreignKey:BookID"`
+	Bookmarks   []Bookmark
 	Users       []User     `gorm:"many2many:user_books;"`
 	RealesedAt  string     `gorm:"size:255"`
 	Status      BookStatus `gorm:"type:varchar(20);default:'Ongoing'"`
-	Chapters    []Chapter  `gorm:"foreignKey:BookID"`
 }

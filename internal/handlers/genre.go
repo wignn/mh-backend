@@ -47,3 +47,17 @@ func GetGenreById(db *gorm.DB) gin.HandlerFunc {
 		c.JSON(200, gin.H{"genre": genre})
 	}
 }
+
+
+func GetGenres(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		genres, err := services.GetGenres(db)
+
+		if err != nil {
+			c.JSON(500, gin.H{"error": "Failed to get genres"})
+			return
+		}
+
+		c.JSON(200, gin.H{"dara": genres})
+	}
+}

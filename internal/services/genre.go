@@ -13,3 +13,7 @@ func CreateGenre(db *gorm.DB, genre string) (*model.Genre, error) {
 func GetGenreById(db *gorm.DB, id int) (*model.Genre, error) {
 	return repository.GetGenreById(db, id)
 }
+
+func GetGenres(db *gorm.DB) ([]*model.Genre, error) {
+	return repository.GetGenres(db)
+}

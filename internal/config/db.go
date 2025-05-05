@@ -18,5 +18,5 @@ func ConnectDb() {
 	}
 
 	DB = database
-	database.AutoMigrate(&model.Book{}, &model.User{}, &model.Genre{}, &model.Bookmark{})
+	database.AutoMigrate(&model.Book{}, &model.User{}, &model.Genre{}, &model.Bookmark{}, &model.BookGenre{}, &model.BookGenre{}, &model.Chapter{})
 }

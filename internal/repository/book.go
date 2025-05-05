@@ -2,7 +2,6 @@ package repository
 
 import (
 	"github.com/wignn/mh-backend/internal/model"
-	"github.com/wignn/mh-backend/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -11,29 +10,22 @@ func CreateBook(db *gorm.DB, book *model.Book) (*model.Book, error) {
 	return book, err
 }
 
+func GetBookByQuery(db *gorm.DB, query string, limit int, offset int) ([]*model.Book, int64, error) {
+	var books []*model.Book
+	var total int64
 
-func GetBookByQuery(db *gorm.DB, query string, page int, limit int) ([]*model.Book, error) {
-	var book []*model.Book
-	currentPage := 1
-	currentLimit := 10
-
-	offset, currentLimit := utils.Paginate(currentPage, currentLimit)
-
-	tx := db.Model(&model.Book{})
-
-	if query != "" {
-		tx = tx.Where("title ILIKE ?", "%"+query+"%")
+	tx := db.Model(&model.Book{}).
+		Where("title ILIKE ?", "%"+query+"%")
+	err := tx.Count(&total).Error
+	if err != nil {
+		return nil, 0, err
 	}
-	
-	tx = tx.Offset(offset).Limit(currentLimit)
-
-	if err := tx.Find(&book).Error; err != nil {
-		return nil, err
+	err = tx.Limit(limit).Offset(offset).Find(&books).Error
+	if err != nil {
+		return nil, 0, err
 	}
-
-	return book, nil
+	return books, total, err
 }
-
 
 func GetBookByID(db *gorm.DB, id *int) (*model.Book, error) {
 	var book *model.Book
@@ -43,17 +35,16 @@ func GetBookByID(db *gorm.DB, id *int) (*model.Book, error) {
 
 func UpdateBook(db *gorm.DB, book *model.Book) (*model.Book, error) {
 	var existingBook model.Book
-	if err := db.First(&existingBook, book.ID).Error; err != nil {
-		return nil, err
-	}
-	
-	if err := db.Model(&existingBook).Updates(book).Error; err != nil {
-		return nil, err
-	}
-	
-	return &existingBook, nil
+	err := db.First(&existingBook, book.ID).Error
+	err = db.Model(&existingBook).Updates(book).Error
+	return &existingBook, err
 }
 
 func DeleteBook(db *gorm.DB, id int) error {
 	return db.Delete(&model.Book{}, id).Error
+}
+
+func CreateBookGenre(db *gorm.DB, book *model.BookGenre) (*model.BookGenre, error) {
+	err := db.Create(&book).Error
+	return book, err
 }
