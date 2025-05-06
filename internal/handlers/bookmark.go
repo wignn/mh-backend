@@ -1,11 +1,13 @@
 package handlers
 
 import (
+	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/wignn/mh-backend/internal/model"
 	"github.com/wignn/mh-backend/internal/services"
+	"github.com/wignn/mh-backend/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -14,18 +16,17 @@ func CreateBookmark(db *gorm.DB) gin.HandlerFunc {
 		var bookmark model.Bookmark
 
 		if err := c.ShouldBindJSON(&bookmark); err != nil {
-			c.JSON(400, gin.H{"error": "Validation error"})
+			utils.RespondJSON(c, http.StatusBadRequest, nil, "Invalid request body")
 			return
 		}
 
 		newBookmark, err := services.CreateBookmark(db, &bookmark)
-
 		if err != nil {
-			c.JSON(500, gin.H{"error": "Failed to create bookmark"})
+			utils.RespondJSON(c, http.StatusInternalServerError, nil, "Failed to create bookmark")
 			return
 		}
 
-		c.JSON(200, gin.H{"bookmark": newBookmark})
+		utils.RespondJSON(c, http.StatusOK, newBookmark, "Bookmark created successfully")
 	}
 }
 
@@ -34,13 +35,12 @@ func GetBookByUser(db *gorm.DB) gin.HandlerFunc {
 		userId := c.Param("userId")
 
 		bookmarks, err := services.GetBookmarksByUser(db, userId)
-
 		if err != nil {
-			c.JSON(500, gin.H{"error": "Failed to get bookmarks"})
+			utils.RespondJSON(c, http.StatusInternalServerError, nil, "Failed to get bookmarks")
 			return
 		}
 
-		c.JSON(200, gin.H{"bookmarks": bookmarks})
+		utils.RespondJSON(c, http.StatusOK, bookmarks, "Bookmarks retrieved successfully")
 	}
 }
 
@@ -49,13 +49,12 @@ func GetBookmarkById(db *gorm.DB) gin.HandlerFunc {
 		id := c.Param("id")
 
 		bookmark, err := services.GetBookmarkById(db, id)
-
 		if err != nil {
-			c.JSON(500, gin.H{"error": "Failed to get bookmark"})
+			utils.RespondJSON(c, http.StatusInternalServerError, nil, "Failed to get bookmark")
 			return
 		}
 
-		c.JSON(200, gin.H{"bookmark": bookmark})
+		utils.RespondJSON(c, http.StatusOK, bookmark, "Bookmark retrieved successfully")
 	}
 }
 
@@ -63,43 +62,40 @@ func IsBookmark(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userId, err := strconv.Atoi(c.Param("userId"))
 		if err != nil {
-			c.JSON(400, gin.H{"error": "Invalid user ID"})
+			utils.RespondJSON(c, http.StatusBadRequest, nil, "Invalid user ID")
 			return
 		}
+
 		bookId, err := strconv.Atoi(c.Param("bookId"))
-
 		if err != nil {
-			c.JSON(400, gin.H{"error": "Invalid book ID"})
+			utils.RespondJSON(c, http.StatusBadRequest, nil, "Invalid book ID")
 			return
 		}
+
 		data, err := services.IsBookmarked(db, userId, bookId)
-
 		if err != nil {
-			c.JSON(500, gin.H{"error": "Failed to check bookmark"})
+			utils.RespondJSON(c, http.StatusInternalServerError, nil, "Failed to check bookmark")
 			return
 		}
 
-		c.JSON(200, gin.H{"isBookmarked": true,
-			"bookmark": data})
+		utils.RespondJSON(c, http.StatusOK, gin.H{"isBookmarked": true, "bookmark": data}, "Bookmark check completed")
 	}
 }
 
 func DeleteBookmark(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
-
 		if err != nil {
-			c.JSON(400, gin.H{"error": "Invalid bookmark ID"})
+			utils.RespondJSON(c, http.StatusBadRequest, nil, "Invalid bookmark ID")
 			return
 		}
 
 		err = services.DeleteBookmark(db, id)
-
 		if err != nil {
-			c.JSON(500, gin.H{"error": "Failed to delete bookmark"})
+			utils.RespondJSON(c, http.StatusInternalServerError, nil, "Failed to delete bookmark")
 			return
 		}
 
-		c.JSON(200, gin.H{"message": "Bookmark deleted successfully"})
+		utils.RespondJSON(c, http.StatusOK, nil, "Bookmark deleted successfully")
 	}
 }

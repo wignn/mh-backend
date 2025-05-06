@@ -30,6 +30,9 @@ func InitRoutes(r *gin.Engine, db *gorm.DB) {
 		apiV1.GET("/book", handlers.GetBookByQuery(db))
 		apiV1.GET("/book/:id", handlers.GetBookByID(db))
 
+		//chapter routes
+		apiV1.GET("/chapter/:id", handlers.GetChapterById(db))
+
 		/**
 		this is route with authentication middleware
 		*/
@@ -53,10 +56,13 @@ func InitRoutes(r *gin.Engine, db *gorm.DB) {
 
 			//bookmark routes
 			aunthenticated.POST("/bookmark", handlers.CreateBookmark(db))
-			aunthenticated.GET("/bookmark/:userId", handlers.GetBookByUser(db))
+			aunthenticated.GET("/bookmark/user/:userId", handlers.GetBookByUser(db))
 			aunthenticated.GET("/bookmark/:id", handlers.GetBookmarkById(db))
-			aunthenticated.GET("/bookmark/:userId/:bookId", handlers.IsBookmark(db))
+			aunthenticated.GET("/bookmark/isBookmark/:userId/:bookId", handlers.IsBookmark(db))
 			aunthenticated.DELETE("/bookmark/:id", handlers.DeleteBookmark(db))
+
+			//chapter routes
+
 		}
 	}
 }

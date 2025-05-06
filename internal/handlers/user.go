@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -15,7 +16,7 @@ func CreateUser(db *gorm.DB) gin.HandlerFunc {
 		var userRequest model.RegisterRequest
 
 		if err := c.ShouldBindJSON(&userRequest); err != nil {
-			c.JSON(400, gin.H{"error": "Validation error"})
+			utils.RespondJSON(c, http.StatusBadRequest, nil, "Validation error")
 			return
 		}
 
@@ -26,25 +27,18 @@ func CreateUser(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		userPtr, err := services.RegisterUser(db, &user)
-
 		if err != nil {
-			c.JSON(500, gin.H{"error": "Failed to create user"})
+			utils.RespondJSON(c, http.StatusInternalServerError, nil, "Failed to create user")
 			return
 		}
 
-		userResponse := struct {
-			Name      string `json:"name"`
-			Email     string `json:"email"`
-			CreatedAt string `json:"created_at"`
-			UpdatedAt string `json:"updated_at"`
-		}{
-			Name:      userPtr.Username,
-			Email:     userPtr.Email,
-			CreatedAt: userPtr.CreatedAt.Format("2006-01-02 15:04:05"),
-			UpdatedAt: userPtr.UpdatedAt.Format("2006-01-02 15:04:05"),
+		response := gin.H{
+			"username":   userPtr.Username,
+			"email":      userPtr.Email,
+			"created_at": userPtr.CreatedAt.Format("2006-01-02 15:04:05"),
+			"updated_at": userPtr.UpdatedAt.Format("2006-01-02 15:04:05"),
 		}
-
-		c.JSON(200, userResponse)
+		utils.RespondJSON(c, http.StatusOK, response, "User created successfully")
 	}
 }
 
@@ -52,29 +46,23 @@ func GetUserByID(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
-			c.JSON(400, gin.H{"error": "Invalid user ID"})
+			utils.RespondJSON(c, http.StatusBadRequest, nil, "Invalid user ID")
 			return
 		}
 
 		user, err := services.GetUserByID(db, &id)
 		if err != nil {
-			c.JSON(404, gin.H{"error": "User not found"})
+			utils.RespondJSON(c, http.StatusNotFound, nil, "User not found")
 			return
 		}
 
-		userResponse := struct {
-			Username  string `json:"Username"`
-			Email     string `json:"email"`
-			CreatedAt string `json:"created_at"`
-			UpdatedAt string `json:"updated_at"`
-		}{
-			Username:  user.Username,
-			Email:     user.Email,
-			CreatedAt: user.CreatedAt.Format("2006-01-02 15:04:05"),
-			UpdatedAt: user.UpdatedAt.Format("2006-01-02 15:04:05"),
+		response := gin.H{
+			"username":   user.Username,
+			"email":      user.Email,
+			"created_at": user.CreatedAt.Format("2006-01-02 15:04:05"),
+			"updated_at": user.UpdatedAt.Format("2006-01-02 15:04:05"),
 		}
-
-		c.JSON(200, userResponse)
+		utils.RespondJSON(c, http.StatusOK, response, "User fetched successfully")
 	}
 }
 
@@ -82,35 +70,30 @@ func UpdateUser(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 		if err != nil {
-			c.JSON(400, gin.H{"error": "Invalid user ID"})
+			utils.RespondJSON(c, http.StatusBadRequest, nil, "Invalid user ID")
 			return
 		}
-		var user *model.User
 
+		var user model.User
 		if err := c.ShouldBindJSON(&user); err != nil {
-			c.JSON(400, gin.H{"error": "Validation error"})
+			utils.RespondJSON(c, http.StatusBadRequest, nil, "Validation error")
 			return
 		}
 		user.ID = uint(id)
 
-		user, err = services.UpdateUser(db, user)
+		updatedUser, err := services.UpdateUser(db, &user)
 		if err != nil {
-			c.JSON(500, gin.H{"error": "Failed to update user"})
+			utils.RespondJSON(c, http.StatusInternalServerError, nil, "Failed to update user")
 			return
 		}
 
-		userResponse := struct {
-			Username  string `json:"name"`
-			Email     string `json:"email"`
-			CreatedAt string `json:"created_at"`
-			UpdatedAt string `json:"updated_at"`
-		}{
-			Username:  user.Username,
-			Email:     user.Email,
-			CreatedAt: user.CreatedAt.Format("2006-01-02 15:04:05"),
-			UpdatedAt: user.UpdatedAt.Format("2006-01-02 15:04:05"),
+		response := gin.H{
+			"username":   updatedUser.Username,
+			"email":      updatedUser.Email,
+			"created_at": updatedUser.CreatedAt.Format("2006-01-02 15:04:05"),
+			"updated_at": updatedUser.UpdatedAt.Format("2006-01-02 15:04:05"),
 		}
-		c.JSON(200, userResponse)
+		utils.RespondJSON(c, http.StatusOK, response, "User updated successfully")
 	}
 }
 
@@ -118,48 +101,51 @@ func DeleteUser(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
-			c.JSON(400, gin.H{"error": "Invalid user ID"})
+			utils.RespondJSON(c, http.StatusBadRequest, nil, "Invalid user ID")
 			return
 		}
 		err = services.DeleteUser(db, &id)
 		if err != nil {
-			c.JSON(500, gin.H{"error": "Failed to delete user"})
+			utils.RespondJSON(c, http.StatusInternalServerError, nil, "Failed to delete user")
 			return
 		}
-		c.JSON(200, gin.H{"message": "User deleted successfully"})
+		utils.RespondJSON(c, http.StatusOK, nil, "User deleted successfully")
 	}
 }
 
 func LoginUser(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var user model.User
+		var loginReq model.LoginRequest
 
-		if err := c.ShouldBindJSON(&user); err != nil {
-			c.JSON(400, gin.H{"error": " Validation error"})
+		if err := c.ShouldBindJSON(&loginReq); err != nil {
+			utils.RespondJSON(c, http.StatusBadRequest, nil, "Validation error")
 			return
 		}
 
-		existingUser, err := services.LoginUser(db, &user)
-		
+		user, err := services.LoginUser(db, &model.User{
+			Username: loginReq.Username,
+			Password: loginReq.Password,
+		})
 		if err != nil {
-			c.JSON(401, gin.H{"error": "Invalid credentials"})
+			utils.RespondJSON(c, http.StatusUnauthorized, nil, "Invalid credentials")
 			return
 		}
 
 		token, err := utils.GenerateToken(user.Username, int(user.ID), user.IsAdmin)
 		if err != nil {
-			c.JSON(401, gin.H{"error": "Invalid credentials"})
+			utils.RespondJSON(c, http.StatusInternalServerError, nil, "Failed to generate token")
 			return
 		}
 
-		c.JSON(200, gin.H{
+		response := gin.H{
 			"user": gin.H{
-				"id":       existingUser.ID,
-				"username": existingUser.Username,
-				"email":    existingUser.Email,
-				"is_admin": existingUser.IsAdmin,
+				"id":       user.ID,
+				"username": user.Username,
+				"email":    user.Email,
+				"is_admin": user.IsAdmin,
 			},
 			"token": token,
-		})
+		}
+		utils.RespondJSON(c, http.StatusOK, response, "Login successful")
 	}
 }

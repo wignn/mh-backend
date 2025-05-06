@@ -1,61 +1,57 @@
 package handlers
 
 import (
-	"log"
+	"net/http"
 	"strconv"
 	"github.com/gin-gonic/gin"
 	"github.com/wignn/mh-backend/internal/model"
 	"github.com/wignn/mh-backend/internal/services"
+	"github.com/wignn/mh-backend/pkg/utils"
 	"gorm.io/gorm"
 )
 
+
 func CreateBook(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-
 		var book model.Book
 
 		if err := c.ShouldBindJSON(&book); err != nil {
-			c.JSON(400, gin.H{"error": "Validation error"})
+			utils.RespondJSON(c, http.StatusBadRequest, nil, "Invalid request body")
 			return
 		}
 
 		createdBook, err := services.CreateBook(db, &book)
 		if err != nil {
-			c.JSON(500, gin.H{"error": "Failed to create book"})
+			utils.RespondJSON(c, http.StatusInternalServerError, nil, "Failed to create book")
 			return
 		}
 
-		c.JSON(200,
-			gin.H{
-				"data": createdBook,
-			})
+		utils.RespondJSON(c, http.StatusOK, createdBook, "Book created successfully")
 	}
 }
 
 func GetBookByQuery(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		query := c.DefaultQuery("query", "")
-
 		limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
 		if err != nil || limit <= 0 {
-			c.JSON(400, gin.H{"error": "invalid limit"})
+			utils.RespondJSON(c, http.StatusBadRequest, nil, "Invalid limit value")
 			return
 		}
 
 		page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
 		if err != nil || page <= 0 {
-			c.JSON(400, gin.H{"error": "invalid page"})
+			utils.RespondJSON(c, http.StatusBadRequest, nil, "Invalid page value")
 			return
 		}
 
 		books, total, err := services.GetBookByQuery(db, query, page, limit)
 		if err != nil {
-			log.Println("Error fetching book:", err)
-			c.JSON(500, gin.H{"message": "internal server error"})
+			utils.RespondJSON(c, http.StatusInternalServerError, nil, "Failed to fetch books")
 			return
 		}
 
-		c.JSON(200, gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"data":  books,
 			"page":  page,
 			"limit": limit,
@@ -67,39 +63,32 @@ func GetBookByQuery(db *gorm.DB) gin.HandlerFunc {
 func GetBookByID(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
-
 		if err != nil {
-			c.JSON(400, gin.H{"error": "Invalid book ID"})
+			utils.RespondJSON(c, http.StatusBadRequest, nil, "Invalid book ID")
 			return
 		}
 
 		book, err := services.GetBookByID(db, &id)
-
 		if err != nil {
-			c.JSON(404, gin.H{"message": "not found"})
+			utils.RespondJSON(c, http.StatusNotFound, nil, "Book not found")
 			return
 		}
 
-		c.JSON(200,
-			gin.H{
-				"data": book,
-			})
+		utils.RespondJSON(c, http.StatusOK, book, "Book retrieved successfully")
 	}
 }
 
 func UpdateBook(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
-
-		var book model.Book
-
 		if err != nil {
-			c.JSON(400, gin.H{"error": "Invalid Book ID"})
+			utils.RespondJSON(c, http.StatusBadRequest, nil, "Invalid book ID")
 			return
 		}
 
+		var book model.Book
 		if err := c.ShouldBindJSON(&book); err != nil {
-			c.JSON(400, gin.H{"error": "Validation error"})
+			utils.RespondJSON(c, http.StatusBadRequest, nil, "Invalid request body")
 			return
 		}
 
@@ -107,13 +96,11 @@ func UpdateBook(db *gorm.DB) gin.HandlerFunc {
 
 		updatedBook, err := services.UpdateBook(db, &book)
 		if err != nil {
-			c.JSON(500, gin.H{"error": "Failed to update book"})
+			utils.RespondJSON(c, http.StatusInternalServerError, nil, "Failed to update book")
 			return
 		}
 
-		c.JSON(200, gin.H{
-			"data": updatedBook,
-		})
+		utils.RespondJSON(c, http.StatusOK, updatedBook, "Book updated successfully")
 	}
 }
 
@@ -121,38 +108,34 @@ func DeleteBook(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
-			c.JSON(400, gin.H{"error": "Invalid book ID"})
+			utils.RespondJSON(c, http.StatusBadRequest, nil, "Invalid book ID")
 			return
 		}
 
 		if err := services.DeleteBook(db, id); err != nil {
-			c.JSON(500, gin.H{"error": "Failed to delete book"})
+			utils.RespondJSON(c, http.StatusInternalServerError, nil, "Failed to delete book")
 			return
 		}
 
-		c.JSON(200, gin.H{"message": "Book deleted successfully"})
+		utils.RespondJSON(c, http.StatusOK, nil, "Book deleted successfully")
 	}
 }
 
 func CreateGenreBook(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var BookGenre model.BookGenre
+		var bookGenre model.BookGenre
 
-		if err := c.ShouldBindJSON(&BookGenre); err != nil {
-			c.JSON(400, gin.H{"error": "Validation error"})
+		if err := c.ShouldBindJSON(&bookGenre); err != nil {
+			utils.RespondJSON(c, http.StatusBadRequest, nil, "Invalid request body")
 			return
 		}
 
-		createdBookGenre, err := services.CreateBookGenre(db, &BookGenre)
-
+		created, err := services.CreateBookGenre(db, &bookGenre)
 		if err != nil {
-			c.JSON(500, gin.H{"error": "Failed to create book genre"})
+			utils.RespondJSON(c, http.StatusInternalServerError, nil, "Failed to create book genre")
 			return
 		}
 
-		c.JSON(200,
-			gin.H{
-				"data": createdBookGenre,
-			})
+		utils.RespondJSON(c, http.StatusOK, created, "Book genre created successfully")
 	}
 }

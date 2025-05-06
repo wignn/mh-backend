@@ -1,37 +1,37 @@
 package handlers
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/wignn/mh-backend/internal/services"
+	"github.com/wignn/mh-backend/pkg/utils"
 )
 
 func UploadImage() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		fileHeader, err := c.FormFile("file")
 		if err != nil {
-			c.JSON(400, gin.H{"error": "File is required"})
+			utils.RespondJSON(c, http.StatusBadRequest, nil, "File is required")
 			return
 		}
 
 		file, err := fileHeader.Open()
 		if err != nil {
-			c.JSON(500, gin.H{"error": "Failed to open file"})
+			utils.RespondJSON(c, http.StatusInternalServerError, nil, "Failed to open file")
 			return
 		}
 		defer file.Close()
 
 		filename, err := services.SaveImage(file, fileHeader.Filename)
 		if err != nil {
-			c.JSON(500, gin.H{"error": "Failed to save image"})
+			utils.RespondJSON(c, http.StatusInternalServerError, nil, "Failed to save image")
 			return
 		}
 
-		c.JSON(200, gin.H{
-			"url": filename,
-		})
+		utils.RespondJSON(c, http.StatusOK, gin.H{"url": filename}, "Image uploaded successfully")
 	}
 }
-
 
 func GetImage() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -39,7 +39,7 @@ func GetImage() gin.HandlerFunc {
 
 		path, err := services.GetImage(url)
 		if err != nil {
-			c.JSON(404, gin.H{"error": "File not found"})
+			utils.RespondJSON(c, http.StatusNotFound, nil, "File not found")
 			return
 		}
 
